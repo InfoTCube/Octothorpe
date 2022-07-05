@@ -8,9 +8,12 @@ namespace lexer {
         char cChar;
 
         for(int i=0; i<content.length(); ++i) {
+
             cChar = content[i];
 
             if(cChar == '"') {
+                if (currentToken.type != Type::UNDEFINED) { tokens.emplace_back(currentToken); }
+
                 //parse string
                 currentToken = { Type::STRING, "", cLineNo, cCharNo };
                 ++i; ++cCharNo;
@@ -43,6 +46,8 @@ namespace lexer {
                 if(cChar == '\n') { ++cLineNo; cCharNo=0; }
 
             } else if(isdigit(cChar)) {
+                if (currentToken.type != Type::UNDEFINED) { tokens.emplace_back(currentToken); }
+
                 //parse numbers
                 currentToken = { Type::INTEGER, "", cLineNo, cCharNo };
                 while(isdigit(cChar) || cChar == '_' || cChar == '.') {
@@ -60,16 +65,96 @@ namespace lexer {
                 }
 
                 tokens.emplace_back(currentToken);
-                currentToken = { Type::UNDEFINED, "", cLineNo, cCharNo};
+                --i; --cCharNo;
+                cChar = content[i];
+                currentToken = { Type::UNDEFINED, "", cLineNo, cCharNo };
 
             } else if(std::find(std::begin(operatorsList), std::end(operatorsList), cChar) != std::end(operatorsList)) {
                 //parse operators
+                if (currentToken.type != Type::UNDEFINED) { tokens.emplace_back(currentToken); }
+
+                currentToken = { Type::OPERATOR, "", cLineNo, cCharNo };
+                currentToken.content = cChar;
+                if(i+1<content.length()) {
+                    switch(cChar) {
+                        case '+':
+                            if(content[i+1] == '+' || content[i+1] == '=') { currentToken.content += content[i+1]; ++i; ++cCharNo; cChar = content[i]; }
+                            break;
+                        case '-':
+                            if(content[i+1] == '-' || content[i+1] == '=') { currentToken.content += content[i+1]; ++i; ++cCharNo; cChar = content[i]; }
+                            break;
+                        case '*':
+                            if(content[i+1] == '*' || content[i+1] == '=') { currentToken.content += content[i+1]; ++i; ++cCharNo; cChar = content[i]; }
+                            break;
+                        case '/':
+                            if(content[i+1] == '=') { currentToken.content += '='; ++i; ++cCharNo; cChar = content[i]; }
+                            break;
+                        case '%':
+                            if(content[i+1] == '=') { currentToken.content += '='; ++i; ++cCharNo; cChar = content[i]; }
+                            break;
+                        case '=':
+                            if(content[i+1] == '=') {
+                                currentToken.content += '=';
+                                currentToken.type = Type::LOGICAL;
+                                ++i; ++cCharNo; cChar = content[i];
+                            }
+                            break;
+                    }
+                }
+
+                tokens.emplace_back(currentToken);
+                currentToken = { Type::UNDEFINED, "", cLineNo, cCharNo};
+
             } else if(std::find(std::begin(logicalsList), std::end(logicalsList), cChar) != std::end(logicalsList)) {
                 //parse logicals
+                if (currentToken.type != Type::UNDEFINED) { tokens.emplace_back(currentToken); }
+
+                currentToken = { Type::LOGICAL, "", cLineNo, cCharNo };
+                currentToken.content = cChar;
+                if(i+1<content.length()) {
+                    switch(cChar) {
+                        case '<':
+                            if(content[i+1] == '=') { currentToken.content += '='; ++i; ++cCharNo; cChar = content[i]; }
+                            break;
+                        case '>':
+                            if(content[i+1] == '=') { currentToken.content += '='; ++i; ++cCharNo; cChar = content[i]; }
+                            break;
+                        case '!':
+                            if(content[i+1] == '=') { currentToken.content += '='; ++i; ++cCharNo; cChar = content[i]; }
+                            break;
+                        case '&':
+                            if(content[i+1] == '&') { currentToken.content += '&'; ++i; ++cCharNo; cChar = content[i]; }
+                            break;
+                        case '|':
+                            if(content[i+1] == '|') { currentToken.content += '|'; ++i; ++cCharNo; cChar = content[i]; }
+                            break;
+                    }
+                }
+
+                tokens.emplace_back(currentToken);
+                currentToken = { Type::UNDEFINED, "", cLineNo, cCharNo};
+
             } else if(std::find(std::begin(punctuationsList), std::end(punctuationsList), cChar) != std::end(punctuationsList)) {
                 //parse punctuations
+                if (currentToken.type != Type::UNDEFINED) { tokens.emplace_back(currentToken); }
+
+                currentToken = { Type::PUNCTUATION, "", cLineNo, cCharNo };
+                currentToken.content = cChar;
+                tokens.emplace_back(currentToken);
+                currentToken = { Type::UNDEFINED, "", cLineNo, cCharNo};
+
             } else {
                 //parse indetifier or keyword 
+                if (currentToken.type == Type::UNDEFINED) {
+                    currentToken.type = Type::IDENTIFIER;
+                    currentToken.content.append(1, cChar);
+                } else if (currentToken.type == Type::IDENTIFIER) {
+                    currentToken.content.append(1, cChar);
+                } else if(currentToken.type != Type::UNDEFINED){
+                    tokens.emplace_back(currentToken);
+                    currentToken.type = Type::IDENTIFIER;
+                    currentToken.content = cChar;
+                }
             }
 
             ++cCharNo;
@@ -77,6 +162,9 @@ namespace lexer {
 
         if (currentToken.type != Type::UNDEFINED)
             tokens.emplace_back(currentToken);
+
+        for(int i=0; i<tokens.size(); ++i)
+            if(std::find(std::begin(keywordsList), std::end(keywordsList), tokens[i].content) != std::end(keywordsList)) { tokens[i].type = Type::KEYWORD; }
 
         return tokens;
     }

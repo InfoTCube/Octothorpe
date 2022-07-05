@@ -8,7 +8,7 @@
 namespace lexer {
 
     const std::string keywordsList[] = {"if", "elif", "else", "loop", "int", "float", "string", "bool", "#"};
-    const char operatorsList[] = {'+', '-', '*', '/', '='};
+    const char operatorsList[] = {'+', '-', '*', '/', '%', '='};
     const char logicalsList[] = {'>', '<', '&', '|', '!'};
     const char punctuationsList[] = {'(', ')', '{', '}', '[', ']', ';', ':', ',', '.', '"', '\''};
 

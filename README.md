@@ -6,16 +6,14 @@ Octothorpe (#) programming language
 
 + Clone this repo
 + Create and enter build directory
-
 ```bash
-    mkdir build && cd "$_"
+mkdir build && cd "$_"
 ```
 
 + Use commands below to build the project
-
 ```bash
-    cmake ..
-    make
+cmake ..
+make
 ```
 
 + Use `./octothorpe <main file>` to compile the code

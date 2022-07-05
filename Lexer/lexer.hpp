@@ -2,12 +2,19 @@
 
 #include <iostream>
 #include <vector>
+#include <cctype>
+#include <algorithm>
 
 namespace lexer {
 
+    const std::string keywordsList[] = {"if", "elif", "else", "loop", "int", "float", "string", "bool", "#"};
+    const char operatorsList[] = {'+', '-', '*', '/', '='};
+    const char logicalsList[] = {'>', '<', '&', '|', '!'};
+    const char punctuationsList[] = {'(', ')', '{', '}', '[', ']', ';', ':', ',', '.', '"', '\''};
+
     // Types of tokens
     enum Type {
-        UNDIFINED = -1,
+        UNDEFINED = -1,
         IDENTIFIER = 0,
         KEYWORD = 1,
         OPERATOR = 2,
@@ -26,7 +33,7 @@ namespace lexer {
         int lineNo;
         int charNo;
 
-        void debug_print();
+        void debugPrint();
     };
 
     // Main lexer method
